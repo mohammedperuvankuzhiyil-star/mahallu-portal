@@ -1,0 +1,270 @@
+{
+  "users": [
+    {
+      "id": "admin-1",
+      "name": "Mahallu President / Secretary",
+      "username": "SUPERADMIN",
+      "passwordHash": "admin@123",
+      "phone": "9876543210",
+      "role": "SUPERADMIN",
+      "createdAt": "2026-08-27T19:36:51.704Z"
+    },
+    {
+      "id": "vol-1",
+      "name": "Mohammed Shafi",
+      "username": "shafi",
+      "passwordHash": "vol@123",
+      "phone": "9847123456",
+      "role": "VOLUNTEER",
+      "createdAt": "2026-08-27T19:36:51.705Z"
+    },
+    {
+      "id": "vol-2",
+      "name": "Abdul Rahman",
+      "username": "rahman",
+      "passwordHash": "vol@123",
+      "phone": "9847654321",
+      "role": "VOLUNTEER",
+      "createdAt": "2026-08-27T19:36:51.705Z"
+    }
+  ],
+  "houses": [
+    {
+      "_id": "house-101",
+      "houseNo": "12/450",
+      "houseName": "Baitul Noor (Veliyil House)",
+      "ward": "Ward 3",
+      "economicStatus": "BPL (Below Poverty Line)",
+      "houseOwnership": "Own House",
+      "vehicles": [
+        {
+          "type": "Two Wheeler (Scooter / Motorcycle)",
+          "count": 2
+        },
+        {
+          "type": "Four Wheeler / Car",
+          "count": 1
+        }
+      ],
+      "registeredByVolunteerName": "Mohammed Shafi",
+      "registeredByVolunteerId": "vol-1",
+      "createdAt": "2026-08-22T19:36:51.705Z",
+      "updatedAt": "2026-08-22T19:36:51.705Z"
+    },
+    {
+      "_id": "house-102",
+      "houseNo": "12/451",
+      "houseName": "Al-Huda Villa",
+      "ward": "Ward 3",
+      "economicStatus": "APL (Above Poverty Line)",
+      "houseOwnership": "Own House",
+      "vehicles": [
+        {
+          "type": "Two Wheeler (Scooter / Motorcycle)",
+          "count": 1
+        },
+        {
+          "type": "Four Wheeler / Car",
+          "count": 1
+        },
+        {
+          "type": "Auto Rickshaw",
+          "count": 1
+        }
+      ],
+      "registeredByVolunteerName": "Mohammed Shafi",
+      "registeredByVolunteerId": "vol-1",
+      "createdAt": "2026-08-24T19:36:51.705Z",
+      "updatedAt": "2026-08-24T19:36:51.705Z"
+    },
+    {
+      "_id": "house-103",
+      "houseNo": "08/112",
+      "houseName": "Darussalam (Kunnathu House)",
+      "ward": "Ward 2",
+      "economicStatus": "AAY (Antyodaya Anna Yojana - Yellow)",
+      "houseOwnership": "Temporary Shelter / Shed",
+      "vehicles": [
+        {
+          "type": "Bicycle",
+          "count": 1
+        }
+      ],
+      "registeredByVolunteerName": "Abdul Rahman",
+      "registeredByVolunteerId": "vol-2",
+      "createdAt": "2026-08-25T19:36:51.705Z",
+      "updatedAt": "2026-08-25T19:36:51.705Z"
+    }
+  ],
+  "citizens": [
+    {
+      "_id": "cit-1",
+      "houseId": "house-101",
+      "isHead": true,
+      "relationToHead": "Self (Head)",
+      "name": "Ibrahim Kutty V.P.",
+      "age": 56,
+      "gender": "Male",
+      "bloodGroup": "O+",
+      "maritalStatus": "Married",
+      "phone": "9847112233",
+      "educationStage": "High School (Class 8-10 / SSLC)",
+      "classOrYear": "Course Completed / Graduated",
+      "islamicEducation": "Madrassa High School (Class 5-10)",
+      "isPravasi": true,
+      "pravasiCountry": "United Arab Emirates (UAE)",
+      "jobCategory": "Gulf / Pravasi Worker",
+      "specificJob": "Retail Store Supervisor, Dubai",
+      "healthCondition": "Diabetes / Hypertension (BP)",
+      "specialSkills": "Social Work / Volunteer Leadership",
+      "createdAt": "2026-08-22T19:36:51.705Z"
+    },
+    {
+      "_id": "cit-2",
+      "houseId": "house-101",
+      "isHead": false,
+      "relationToHead": "Spouse (Wife/Husband)",
+      "name": "Fathima Suhra",
+      "age": 50,
+      "gender": "Female",
+      "bloodGroup": "B+",
+      "maritalStatus": "Married",
+      "phone": "9847112234",
+      "educationStage": "High School (Class 8-10 / SSLC)",
+      "classOrYear": "Course Completed / Graduated",
+      "islamicEducation": "Madrassa Primary (Class 1-4)",
+      "isPravasi": false,
+      "jobCategory": "Homemaker",
+      "healthCondition": "None (Healthy)",
+      "specialSkills": "Cooking / Catering / Baking",
+      "createdAt": "2026-08-22T19:36:51.705Z"
+    },
+    {
+      "_id": "cit-3",
+      "houseId": "house-101",
+      "isHead": false,
+      "relationToHead": "Son",
+      "name": "Muhammed Nabeel",
+      "age": 21,
+      "gender": "Male",
+      "bloodGroup": "O+",
+      "maritalStatus": "Single / Unmarried",
+      "phone": "9847112235",
+      "educationStage": "Undergraduate (BA, BSc, BCom, BTech, etc.)",
+      "classOrYear": "Final Year Degree / UG",
+      "islamicEducation": "Hifz (Quran Memorizer / Hafiz)",
+      "isPravasi": false,
+      "jobCategory": "Student",
+      "specificJob": "B.Com Final Year Student",
+      "healthCondition": "None (Healthy)",
+      "specialSkills": "IT / Computer / Graphic Design / Typing",
+      "createdAt": "2026-08-22T19:36:51.705Z"
+    },
+    {
+      "_id": "cit-4",
+      "houseId": "house-101",
+      "isHead": false,
+      "relationToHead": "Daughter",
+      "name": "Aisha Rifa",
+      "age": 16,
+      "gender": "Female",
+      "bloodGroup": "AB+",
+      "maritalStatus": "Single / Unmarried",
+      "phone": "9847112236",
+      "educationStage": "Higher Secondary (+1 / +2 / VHSE)",
+      "classOrYear": "+2 (Plus Two - 12th)",
+      "islamicEducation": "Madrassa Higher Secondary (11-12 Completed)",
+      "isPravasi": false,
+      "jobCategory": "Student",
+      "specificJob": "Plus Two Science Student",
+      "healthCondition": "None (Healthy)",
+      "specialSkills": "Arts / Calligraphy / Tailoring",
+      "createdAt": "2026-08-22T19:36:51.705Z"
+    },
+    {
+      "_id": "cit-5",
+      "houseId": "house-102",
+      "isHead": true,
+      "relationToHead": "Self (Head)",
+      "name": "Usman Haji K.",
+      "age": 62,
+      "gender": "Male",
+      "bloodGroup": "A+",
+      "maritalStatus": "Married",
+      "phone": "9447334455",
+      "educationStage": "Primary School (Class 1-4)",
+      "classOrYear": "Course Completed / Graduated",
+      "islamicEducation": "Madrassa High School (Class 5-10)",
+      "isPravasi": false,
+      "jobCategory": "Business / Self-Employed / Shop",
+      "specificJob": "Hardware Store Owner",
+      "healthCondition": "Heart Disease / Cardiac Issue",
+      "specialSkills": "Social Work / Volunteer Leadership",
+      "createdAt": "2026-08-24T19:36:51.705Z"
+    },
+    {
+      "_id": "cit-6",
+      "houseId": "house-102",
+      "isHead": false,
+      "relationToHead": "Son",
+      "name": "Ameen Usman",
+      "age": 28,
+      "gender": "Male",
+      "bloodGroup": "A+",
+      "maritalStatus": "Married",
+      "phone": "9447334456",
+      "educationStage": "Undergraduate (BA, BSc, BCom, BTech, etc.)",
+      "classOrYear": "Course Completed / Graduated",
+      "islamicEducation": "Madrassa Higher Secondary (11-12 Completed)",
+      "isPravasi": true,
+      "pravasiCountry": "Qatar",
+      "jobCategory": "Gulf / Pravasi Worker",
+      "specificJob": "Mechanical Engineer, Doha",
+      "healthCondition": "None (Healthy)",
+      "specialSkills": "Driving (Heavy / Light)",
+      "createdAt": "2026-08-24T19:36:51.705Z"
+    },
+    {
+      "_id": "cit-7",
+      "houseId": "house-103",
+      "isHead": true,
+      "relationToHead": "Self (Head)",
+      "name": "Zainaba Beevi",
+      "age": 64,
+      "gender": "Female",
+      "bloodGroup": "O-",
+      "maritalStatus": "Widowed",
+      "phone": "9656778899",
+      "educationStage": "Illiterate / No Formal Schooling",
+      "classOrYear": "Not Applicable",
+      "islamicEducation": "Basic Home Islamic Study",
+      "isPravasi": false,
+      "jobCategory": "Unable to Work (Due to Health or Age)",
+      "healthCondition": "Kidney Disease / Dialysis Patient",
+      "healthConditionOther": "Undergoing weekly dialysis at Govt Hospital",
+      "specialSkills": "None",
+      "createdAt": "2026-08-25T19:36:51.705Z"
+    },
+    {
+      "_id": "cit-8",
+      "houseId": "house-103",
+      "isHead": false,
+      "relationToHead": "Son",
+      "name": "Rashid K.",
+      "age": 19,
+      "gender": "Male",
+      "bloodGroup": "B-",
+      "maritalStatus": "Single / Unmarried",
+      "phone": "9656778800",
+      "educationStage": "Diploma / ITI / Polytechnic",
+      "classOrYear": "2nd Year Diploma / ITI",
+      "islamicEducation": "Madrassa High School (Class 5-10)",
+      "isPravasi": false,
+      "jobCategory": "Student",
+      "specificJob": "ITI Electrical Student",
+      "healthCondition": "None (Healthy)",
+      "specialSkills": "Electrical / Plumbing / Wiring",
+      "createdAt": "2026-08-25T19:36:51.705Z"
+    }
+  ]
+}

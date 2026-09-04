@@ -930,6 +930,91 @@ export default function HouseFormModal({
                         </div>
                       </div>
 
+                      {/* Islamic Education */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          Islamic / Religious Education
+                        </label>
+                        <select
+                          value={member.islamicEducation || ISLAMIC_EDUCATION_OPTIONS[0]}
+                          onChange={(e) => handleMemberChange(index, 'islamicEducation', e.target.value)}
+                          className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        >
+                          {ISLAMIC_EDUCATION_OPTIONS.map((ie) => (
+                            <option key={ie} value={ie}>
+                              {ie}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Phone Number */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          Contact Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          placeholder="e.g. 9847112233"
+                          value={member.phone || ''}
+                          onChange={(e) => handleMemberChange(index, 'phone', e.target.value)}
+                          className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+
+                      {/* Pravasi Status */}
+                      <div className="p-3 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                            Is Pravasi (NRI / Working Abroad / Other State)?
+                          </span>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleMemberChange(index, 'isPravasi', true)}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                                member.isPravasi
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                              }`}
+                            >
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMemberChange(index, 'isPravasi', false)}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                                !member.isPravasi
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                              }`}
+                            >
+                              No
+                            </button>
+                          </div>
+                        </div>
+
+                        {member.isPravasi && (
+                          <div className="mt-2.5 pt-2.5 border-t border-slate-200 dark:border-slate-700">
+                            <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                              Pravasi Country / Location
+                            </label>
+                            <select
+                              value={member.pravasiCountry || PRAVASI_COUNTRIES[0]}
+                              onChange={(e) => handleMemberChange(index, 'pravasiCountry', e.target.value)}
+                              className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                            >
+                              {PRAVASI_COUNTRIES.map((c) => (
+                                <option key={c} value={c}>
+                                  {c}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Job Details */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
@@ -950,48 +1035,79 @@ export default function HouseFormModal({
 
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            Phone Number
+                            Specific Job Title / Role
                           </label>
                           <input
-                            type="tel"
-                            placeholder="Optional phone number"
-                            value={member.phone || ''}
-                            onChange={(e) => handleMemberChange(index, 'phone', e.target.value)}
+                            type="text"
+                            placeholder="e.g. Accountant, Student"
+                            value={member.specificJob || ''}
+                            onChange={(e) => handleMemberChange(index, 'specificJob', e.target.value)}
                             className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                           />
                         </div>
                       </div>
 
                       {/* Health with Dynamic Other */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            Health Condition
-                          </label>
-                          <select
-                            value={member.healthCondition || HEALTH_CONDITIONS[0]}
-                            onChange={(e) => handleMemberChange(index, 'healthCondition', e.target.value)}
-                            className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                          >
-                            {HEALTH_CONDITIONS.map((hc) => (
-                              <option key={hc} value={hc}>
-                                {hc}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                      <div className="p-3 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                          Health / Chronic Illness
+                        </label>
+                        <select
+                          value={member.healthCondition || HEALTH_CONDITIONS[0]}
+                          onChange={(e) => handleMemberChange(index, 'healthCondition', e.target.value)}
+                          className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        >
+                          {HEALTH_CONDITIONS.map((hc) => (
+                            <option key={hc} value={hc}>
+                              {hc}
+                            </option>
+                          ))}
+                        </select>
 
                         {member.healthCondition === 'Other' && (
-                          <div>
+                          <div className="pt-1">
                             <label className="block text-[11px] font-semibold text-amber-600 dark:text-amber-400 mb-1">
-                              Specify Illness:
+                              Specify Other Health Condition:
                             </label>
                             <input
                               type="text"
-                              placeholder="Describe illness..."
+                              placeholder="Describe illness or medical requirement..."
                               value={member.healthConditionOther || ''}
                               onChange={(e) => handleMemberChange(index, 'healthConditionOther', e.target.value)}
-                              className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                              className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-amber-300 dark:border-amber-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Special Skills with Dynamic Other */}
+                      <div className="p-3 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                          Special Skills / Talents
+                        </label>
+                        <select
+                          value={member.specialSkills || SPECIAL_SKILLS[0]}
+                          onChange={(e) => handleMemberChange(index, 'specialSkills', e.target.value)}
+                          className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        >
+                          {SPECIAL_SKILLS.map((sk) => (
+                            <option key={sk} value={sk}>
+                              {sk}
+                            </option>
+                          ))}
+                        </select>
+
+                        {member.specialSkills === 'Other' && (
+                          <div className="pt-1">
+                            <label className="block text-[11px] font-semibold text-amber-600 dark:text-amber-400 mb-1">
+                              Specify Other Special Skill / Interest:
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Describe special skill..."
+                              value={member.specialSkillsOther || ''}
+                              onChange={(e) => handleMemberChange(index, 'specialSkillsOther', e.target.value)}
+                              className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-amber-300 dark:border-amber-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none"
                             />
                           </div>
                         )}
