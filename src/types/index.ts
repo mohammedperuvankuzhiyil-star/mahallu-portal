@@ -25,6 +25,9 @@ export interface Citizen {
   healthConditionOther?: string;
   specialSkills: string;
   specialSkillsOther?: string;
+  academicYearRecorded?: string;
+  academicStatus?: 'CURRENT' | 'NEEDS_UPDATE' | 'TRANSITION_REVIEW';
+  academicTransitionNotes?: string;
   createdAt?: string;
   updatedAt?: string;
 }

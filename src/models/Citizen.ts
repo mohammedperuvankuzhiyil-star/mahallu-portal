@@ -21,6 +21,9 @@ export interface ICitizen extends Document {
   healthConditionOther?: string;
   specialSkills: string;
   specialSkillsOther?: string;
+  academicYearRecorded?: string;
+  academicStatus?: 'CURRENT' | 'NEEDS_UPDATE' | 'TRANSITION_REVIEW';
+  academicTransitionNotes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +50,9 @@ const CitizenSchema = new Schema<ICitizen>(
     healthConditionOther: { type: String, default: '' },
     specialSkills: { type: String, default: 'None' },
     specialSkillsOther: { type: String, default: '' },
+    academicYearRecorded: { type: String, default: '' },
+    academicStatus: { type: String, default: 'CURRENT' },
+    academicTransitionNotes: { type: String, default: '' },
   },
   { timestamps: true }
 );
