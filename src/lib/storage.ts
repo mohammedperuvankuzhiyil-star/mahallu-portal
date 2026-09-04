@@ -309,35 +309,34 @@ async function seedMongoIfEmpty() {
     }
     isMongoSeeded = true;
     for (const u of initialData.users) {
-        await User.create({
-          name: u.name,
-          username: u.username.toLowerCase(),
-          passwordHash: u.passwordHash,
-          phone: u.phone,
-          role: u.role,
-        });
-      }
+      await User.create({
+        name: u.name,
+        username: u.username.toLowerCase(),
+        passwordHash: u.passwordHash,
+        phone: u.phone,
+        role: u.role,
+      });
+    }
 
-      for (const h of initialData.houses) {
-        const createdHouse = await HouseModel.create({
-          houseNo: h.houseNo,
-          houseName: h.houseName,
-          ward: h.ward,
-          economicStatus: h.economicStatus,
-          houseOwnership: h.houseOwnership,
-          vehicles: h.vehicles,
-          registeredByVolunteerName: h.registeredByVolunteerName,
-          registeredByVolunteerId: h.registeredByVolunteerId,
-        });
+    for (const h of initialData.houses) {
+      const createdHouse = await HouseModel.create({
+        houseNo: h.houseNo,
+        houseName: h.houseName,
+        ward: h.ward,
+        economicStatus: h.economicStatus,
+        houseOwnership: h.houseOwnership,
+        vehicles: h.vehicles,
+        registeredByVolunteerName: h.registeredByVolunteerName,
+        registeredByVolunteerId: h.registeredByVolunteerId,
+      });
 
-        const membersForHouse = initialData.citizens.filter((c) => c.houseId === h._id);
-        for (const m of membersForHouse) {
-          await CitizenModel.create({
-            ...m,
-            _id: undefined,
-            houseId: createdHouse._id.toString(),
-          });
-        }
+      const membersForHouse = initialData.citizens.filter((c) => c.houseId === h._id);
+      for (const m of membersForHouse) {
+        await CitizenModel.create({
+          ...m,
+          _id: undefined,
+          houseId: createdHouse._id.toString(),
+        });
       }
     }
   } catch (err) {
