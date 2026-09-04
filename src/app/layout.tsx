@@ -3,8 +3,8 @@ import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: 'Mahallu Welfare Portal | Digital Census & Welfare Hub',
-  description: 'Mobile-first census and welfare management portal for Mahallu communities.',
+  title: 'Masjid Al-Fatah Portal | Digital Census & Welfare Hub',
+  description: 'Mobile-first census and welfare management portal for Masjid Al-Fatah Mahallu community.',
 };
 
 export const viewport: Viewport = {

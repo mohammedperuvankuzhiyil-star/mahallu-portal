@@ -35,7 +35,7 @@ export default function Navbar({ user }: NavbarProps) {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white leading-none">
-                Mahallu Portal
+                Masjid Al-Fatah Portal
               </h1>
               {user?.role === 'SUPERADMIN' ? (
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
