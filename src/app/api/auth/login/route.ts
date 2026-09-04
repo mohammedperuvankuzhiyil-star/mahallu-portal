@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     }
 
     // Check volunteer users in storage
-    const user = Storage.getUserByUsername(trimmedUsername);
+    const user = await Storage.getUserByUsername(trimmedUsername);
     if (!user || user.passwordHash !== password) {
       return NextResponse.json(
         { error: 'Invalid username or password' },

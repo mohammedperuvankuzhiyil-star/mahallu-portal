@@ -1,16 +1,20 @@
 import fs from 'fs';
 import path from 'path';
 import { House, Citizen, UserSession } from '@/types';
+import { connectToDatabase } from './mongodb';
+import { User } from '@/models/User';
+import { House as HouseModel } from '@/models/House';
+import { Citizen as CitizenModel } from '@/models/Citizen';
 
 // Pre-seeded default SuperAdmin
 export const DEFAULT_SUPERADMIN = {
   id: 'admin-1',
   name: 'Mahallu President / Secretary',
   username: 'SUPERADMIN',
-  passwordHash: 'admin@123', // In simple prototype comparison or bcrypt
+  passwordHash: 'admin@123',
   phone: '9876543210',
   role: 'SUPERADMIN' as const,
-  createdAt: new Date().toISOString()
+  createdAt: new Date().toISOString(),
 };
 
 const DB_DIR = path.join(process.cwd(), 'data');
@@ -22,7 +26,7 @@ interface LocalStore {
   citizens: Citizen[];
 }
 
-// Initial sample mock data so the portal starts populated and looks alive
+// Initial sample data so the portal starts populated and looks alive
 const initialData: LocalStore = {
   users: [
     DEFAULT_SUPERADMIN,
@@ -33,7 +37,7 @@ const initialData: LocalStore = {
       passwordHash: 'vol@123',
       phone: '9847123456',
       role: 'VOLUNTEER',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     },
     {
       id: 'vol-2',
@@ -42,8 +46,8 @@ const initialData: LocalStore = {
       passwordHash: 'vol@123',
       phone: '9847654321',
       role: 'VOLUNTEER',
-      createdAt: new Date().toISOString()
-    }
+      createdAt: new Date().toISOString(),
+    },
   ],
   houses: [
     {
@@ -55,12 +59,12 @@ const initialData: LocalStore = {
       houseOwnership: 'Own House',
       vehicles: [
         { type: 'Two Wheeler (Scooter / Motorcycle)', count: 2 },
-        { type: 'Four Wheeler / Car', count: 1 }
+        { type: 'Four Wheeler / Car', count: 1 },
       ],
       registeredByVolunteerName: 'Mohammed Shafi',
       registeredByVolunteerId: 'vol-1',
       createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-      updatedAt: new Date(Date.now() - 86400000 * 5).toISOString()
+      updatedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
     },
     {
       _id: 'house-102',
@@ -72,12 +76,12 @@ const initialData: LocalStore = {
       vehicles: [
         { type: 'Two Wheeler (Scooter / Motorcycle)', count: 1 },
         { type: 'Four Wheeler / Car', count: 1 },
-        { type: 'Auto Rickshaw', count: 1 }
+        { type: 'Auto Rickshaw', count: 1 },
       ],
       registeredByVolunteerName: 'Mohammed Shafi',
       registeredByVolunteerId: 'vol-1',
       createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-      updatedAt: new Date(Date.now() - 86400000 * 3).toISOString()
+      updatedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     },
     {
       _id: 'house-103',
@@ -86,17 +90,14 @@ const initialData: LocalStore = {
       ward: 'Ward 2',
       economicStatus: 'AAY (Antyodaya Anna Yojana - Yellow)',
       houseOwnership: 'Temporary Shelter / Shed',
-      vehicles: [
-        { type: 'Bicycle', count: 1 }
-      ],
+      vehicles: [{ type: 'Bicycle', count: 1 }],
       registeredByVolunteerName: 'Abdul Rahman',
       registeredByVolunteerId: 'vol-2',
       createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-      updatedAt: new Date(Date.now() - 86400000 * 2).toISOString()
-    }
+      updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    },
   ],
   citizens: [
-    // House 101 Members
     {
       _id: 'cit-1',
       houseId: 'house-101',
@@ -117,7 +118,7 @@ const initialData: LocalStore = {
       specificJob: 'Retail Store Supervisor, Dubai',
       healthCondition: 'Diabetes / Hypertension (BP)',
       specialSkills: 'Social Work / Volunteer Leadership',
-      createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+      createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
     },
     {
       _id: 'cit-2',
@@ -137,7 +138,7 @@ const initialData: LocalStore = {
       jobCategory: 'Homemaker',
       healthCondition: 'None (Healthy)',
       specialSkills: 'Cooking / Catering / Baking',
-      createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+      createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
     },
     {
       _id: 'cit-3',
@@ -158,7 +159,7 @@ const initialData: LocalStore = {
       specificJob: 'B.Com Final Year Student',
       healthCondition: 'None (Healthy)',
       specialSkills: 'IT / Computer / Graphic Design / Typing',
-      createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+      createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
     },
     {
       _id: 'cit-4',
@@ -179,9 +180,8 @@ const initialData: LocalStore = {
       specificJob: 'Plus Two Science Student',
       healthCondition: 'None (Healthy)',
       specialSkills: 'Arts / Calligraphy / Tailoring',
-      createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+      createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
     },
-    // House 102 Members
     {
       _id: 'cit-5',
       houseId: 'house-102',
@@ -201,7 +201,7 @@ const initialData: LocalStore = {
       specificJob: 'Hardware Store Owner',
       healthCondition: 'Heart Disease / Cardiac Issue',
       specialSkills: 'Social Work / Volunteer Leadership',
-      createdAt: new Date(Date.now() - 86400000 * 3).toISOString()
+      createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     },
     {
       _id: 'cit-6',
@@ -223,9 +223,8 @@ const initialData: LocalStore = {
       specificJob: 'Mechanical Engineer, Doha',
       healthCondition: 'None (Healthy)',
       specialSkills: 'Driving (Heavy / Light)',
-      createdAt: new Date(Date.now() - 86400000 * 3).toISOString()
+      createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     },
-    // House 103 Members (Welfare target / BPL)
     {
       _id: 'cit-7',
       houseId: 'house-103',
@@ -245,7 +244,7 @@ const initialData: LocalStore = {
       healthCondition: 'Kidney Disease / Dialysis Patient',
       healthConditionOther: 'Undergoing weekly dialysis at Govt Hospital',
       specialSkills: 'None',
-      createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
     },
     {
       _id: 'cit-8',
@@ -266,12 +265,12 @@ const initialData: LocalStore = {
       specificJob: 'ITI Electrical Student',
       healthCondition: 'None (Healthy)',
       specialSkills: 'Electrical / Plumbing / Wiring',
-      createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
-    }
-  ]
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    },
+  ],
 };
 
-function ensureDb(): LocalStore {
+function ensureLocalDb(): LocalStore {
   try {
     if (!fs.existsSync(DB_DIR)) {
       fs.mkdirSync(DB_DIR, { recursive: true });
@@ -283,12 +282,11 @@ function ensureDb(): LocalStore {
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
     return JSON.parse(raw);
   } catch (e) {
-    console.error('Storage read error:', e);
     return initialData;
   }
 }
 
-function saveDb(data: LocalStore) {
+function saveLocalDb(data: LocalStore) {
   try {
     if (!fs.existsSync(DB_DIR)) {
       fs.mkdirSync(DB_DIR, { recursive: true });
@@ -299,53 +297,186 @@ function saveDb(data: LocalStore) {
   }
 }
 
+async function seedMongoIfEmpty() {
+  try {
+    const userCount = await User.countDocuments();
+    if (userCount === 0) {
+      for (const u of initialData.users) {
+        await User.create({
+          name: u.name,
+          username: u.username.toLowerCase(),
+          passwordHash: u.passwordHash,
+          phone: u.phone,
+          role: u.role,
+        });
+      }
+
+      for (const h of initialData.houses) {
+        const createdHouse = await HouseModel.create({
+          houseNo: h.houseNo,
+          houseName: h.houseName,
+          ward: h.ward,
+          economicStatus: h.economicStatus,
+          houseOwnership: h.houseOwnership,
+          vehicles: h.vehicles,
+          registeredByVolunteerName: h.registeredByVolunteerName,
+          registeredByVolunteerId: h.registeredByVolunteerId,
+        });
+
+        const membersForHouse = initialData.citizens.filter((c) => c.houseId === h._id);
+        for (const m of membersForHouse) {
+          await CitizenModel.create({
+            ...m,
+            _id: undefined,
+            houseId: createdHouse._id.toString(),
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error seeding MongoDB:', err);
+  }
+}
+
 export const Storage = {
-  getUsers: () => ensureDb().users,
-  
-  getUserByUsername: (username: string) => {
-    const db = ensureDb();
-    return db.users.find(u => u.username.toLowerCase() === username.trim().toLowerCase());
+  getUsers: async () => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      await seedMongoIfEmpty();
+      const users = await User.find().lean();
+      return users.map((u: any) => ({ ...u, id: u._id.toString() }));
+    }
+    return ensureLocalDb().users;
   },
-  
-  addUser: (userData: any) => {
-    const db = ensureDb();
+
+  getUserByUsername: async (username: string) => {
+    const cleanUsername = username.trim().toLowerCase();
+    const conn = await connectToDatabase();
+    if (conn) {
+      await seedMongoIfEmpty();
+      const user = await User.findOne({ username: cleanUsername }).lean();
+      if (!user) return null;
+      return { ...user, id: (user as any)._id.toString() };
+    }
+    const db = ensureLocalDb();
+    return db.users.find((u) => u.username.toLowerCase() === cleanUsername);
+  },
+
+  addUser: async (userData: any) => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      const created = await User.create({
+        name: userData.name,
+        username: userData.username.toLowerCase().trim(),
+        passwordHash: userData.passwordHash,
+        phone: userData.phone,
+        role: userData.role || 'VOLUNTEER',
+      });
+      return { ...created.toObject(), id: created._id.toString() };
+    }
+    const db = ensureLocalDb();
     const newUser = {
       id: 'vol-' + Date.now(),
       ...userData,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
     db.users.push(newUser);
-    saveDb(db);
+    saveLocalDb(db);
     return newUser;
   },
 
-  deleteUser: (id: string) => {
-    const db = ensureDb();
-    db.users = db.users.filter(u => u.id !== id && u.role !== 'SUPERADMIN');
-    saveDb(db);
+  deleteUser: async (id: string) => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      await User.findByIdAndDelete(id);
+      return true;
+    }
+    const db = ensureLocalDb();
+    db.users = db.users.filter((u) => u.id !== id && u.role !== 'SUPERADMIN');
+    saveLocalDb(db);
     return true;
   },
 
-  getHouses: () => {
-    const db = ensureDb();
-    return db.houses.map(h => ({
+  getHouses: async () => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      await seedMongoIfEmpty();
+      const houses = await HouseModel.find().sort({ createdAt: -1 }).lean();
+      const citizens = await CitizenModel.find().lean();
+      return houses.map((h: any) => ({
+        ...h,
+        _id: h._id.toString(),
+        members: citizens
+          .filter((c: any) => c.houseId === h._id.toString())
+          .map((c: any) => ({ ...c, _id: c._id.toString() })),
+      }));
+    }
+    const db = ensureLocalDb();
+    return db.houses.map((h) => ({
       ...h,
-      members: db.citizens.filter(c => c.houseId === h._id)
+      members: db.citizens.filter((c) => c.houseId === h._id),
     }));
   },
 
-  getHouseById: (id: string) => {
-    const db = ensureDb();
-    const house = db.houses.find(h => h._id === id);
+  getHouseById: async (id: string) => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      const house: any = await HouseModel.findById(id).lean();
+      if (!house) return null;
+      const citizens = await CitizenModel.find({ houseId: id }).lean();
+      return {
+        ...house,
+        _id: house._id.toString(),
+        members: citizens.map((c: any) => ({ ...c, _id: c._id.toString() })),
+      };
+    }
+    const db = ensureLocalDb();
+    const house = db.houses.find((h) => h._id === id);
     if (!house) return null;
     return {
       ...house,
-      members: db.citizens.filter(c => c.houseId === house._id)
+      members: db.citizens.filter((c) => c.houseId === house._id),
     };
   },
 
-  createHouseWithMembers: (houseData: Omit<House, '_id'>, headData: any, membersData: any[]) => {
-    const db = ensureDb();
+  createHouseWithMembers: async (
+    houseData: Omit<House, '_id'>,
+    headData: any,
+    membersData: any[]
+  ) => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      const createdHouse = await HouseModel.create(houseData);
+      const houseIdStr = createdHouse._id.toString();
+
+      const createdHead = await CitizenModel.create({
+        ...headData,
+        houseId: houseIdStr,
+        isHead: true,
+        relationToHead: 'Self (Head)',
+      });
+
+      const createdMembers = [];
+      for (const m of membersData) {
+        const cm = await CitizenModel.create({
+          ...m,
+          houseId: houseIdStr,
+          isHead: false,
+        });
+        createdMembers.push({ ...cm.toObject(), _id: cm._id.toString() });
+      }
+
+      return {
+        ...createdHouse.toObject(),
+        _id: houseIdStr,
+        members: [
+          { ...createdHead.toObject(), _id: createdHead._id.toString() },
+          ...createdMembers,
+        ],
+      };
+    }
+
+    const db = ensureLocalDb();
     const houseId = 'house-' + Date.now();
     const now = new Date().toISOString();
 
@@ -353,7 +484,7 @@ export const Storage = {
       ...houseData,
       _id: houseId,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     const newHead: Citizen = {
@@ -363,7 +494,7 @@ export const Storage = {
       isHead: true,
       relationToHead: 'Self (Head)',
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     const newMembers: Citizen[] = membersData.map((m, idx) => ({
@@ -372,22 +503,61 @@ export const Storage = {
       houseId,
       isHead: false,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     }));
 
     db.houses.unshift(newHouse);
     db.citizens.push(newHead, ...newMembers);
-    saveDb(db);
+    saveLocalDb(db);
 
     return {
       ...newHouse,
-      members: [newHead, ...newMembers]
+      members: [newHead, ...newMembers],
     };
   },
 
-  updateHouseWithMembers: (houseId: string, houseData: any, headData: any, membersData: any[], userSession?: UserSession) => {
-    const db = ensureDb();
-    const idx = db.houses.findIndex(h => h._id === houseId);
+  updateHouseWithMembers: async (
+    houseId: string,
+    houseData: any,
+    headData: any,
+    membersData: any[],
+    userSession?: UserSession
+  ) => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      await HouseModel.findByIdAndUpdate(houseId, houseData);
+      await CitizenModel.deleteMany({ houseId });
+
+      const createdHead = await CitizenModel.create({
+        ...headData,
+        houseId,
+        isHead: true,
+        relationToHead: 'Self (Head)',
+      });
+
+      const createdMembers = [];
+      for (const m of membersData) {
+        const cm = await CitizenModel.create({
+          ...m,
+          houseId,
+          isHead: false,
+        });
+        createdMembers.push({ ...cm.toObject(), _id: cm._id.toString() });
+      }
+
+      const updatedHouse: any = await HouseModel.findById(houseId).lean();
+      return {
+        ...updatedHouse,
+        _id: houseId,
+        members: [
+          { ...createdHead.toObject(), _id: createdHead._id.toString() },
+          ...createdMembers,
+        ],
+      };
+    }
+
+    const db = ensureLocalDb();
+    const idx = db.houses.findIndex((h) => h._id === houseId);
     if (idx === -1) return null;
 
     const now = new Date().toISOString();
@@ -395,57 +565,79 @@ export const Storage = {
       ...db.houses[idx],
       ...houseData,
       _id: houseId,
-      updatedAt: now
+      updatedAt: now,
     };
 
-    // Remove old citizens for this house and insert updated ones
-    db.citizens = db.citizens.filter(c => c.houseId !== houseId);
+    db.citizens = db.citizens.filter((c) => c.houseId !== houseId);
 
     const updatedHead: Citizen = {
       ...headData,
-      _id: headData._id || ('cit-' + Date.now() + '-0'),
+      _id: headData._id || 'cit-' + Date.now() + '-0',
       houseId,
       isHead: true,
       relationToHead: 'Self (Head)',
-      updatedAt: now
+      updatedAt: now,
     };
 
     const updatedMembers: Citizen[] = membersData.map((m, i) => ({
       ...m,
-      _id: m._id || ('cit-' + Date.now() + '-' + (i + 1)),
+      _id: m._id || 'cit-' + Date.now() + '-' + (i + 1),
       houseId,
       isHead: false,
-      updatedAt: now
+      updatedAt: now,
     }));
 
     db.citizens.push(updatedHead, ...updatedMembers);
-    saveDb(db);
+    saveLocalDb(db);
 
     return {
       ...db.houses[idx],
-      members: [updatedHead, ...updatedMembers]
+      members: [updatedHead, ...updatedMembers],
     };
   },
 
-  deleteHouse: (houseId: string) => {
-    const db = ensureDb();
-    db.houses = db.houses.filter(h => h._id !== houseId);
-    db.citizens = db.citizens.filter(c => c.houseId !== houseId);
-    saveDb(db);
+  deleteHouse: async (houseId: string) => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      await HouseModel.findByIdAndDelete(houseId);
+      await CitizenModel.deleteMany({ houseId });
+      return true;
+    }
+    const db = ensureLocalDb();
+    db.houses = db.houses.filter((h) => h._id !== houseId);
+    db.citizens = db.citizens.filter((c) => c.houseId !== houseId);
+    saveLocalDb(db);
     return true;
   },
 
-  getAllCitizens: () => {
-    const db = ensureDb();
-    return db.citizens.map(c => {
-      const house = db.houses.find(h => h._id === c.houseId);
+  getAllCitizens: async () => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      await seedMongoIfEmpty();
+      const citizens: any[] = await CitizenModel.find().lean();
+      const houses: any[] = await HouseModel.find().lean();
+      return citizens.map((c) => {
+        const house = houses.find((h) => h._id.toString() === c.houseId);
+        return {
+          ...c,
+          _id: c._id.toString(),
+          houseNo: house?.houseNo || '',
+          houseName: house?.houseName || '',
+          ward: house?.ward || '',
+          economicStatus: house?.economicStatus || '',
+        };
+      });
+    }
+    const db = ensureLocalDb();
+    return db.citizens.map((c) => {
+      const house = db.houses.find((h) => h._id === c.houseId);
       return {
         ...c,
         houseNo: house?.houseNo || '',
         houseName: house?.houseName || '',
         ward: house?.ward || '',
-        economicStatus: house?.economicStatus || ''
+        economicStatus: house?.economicStatus || '',
       };
     });
-  }
+  },
 };

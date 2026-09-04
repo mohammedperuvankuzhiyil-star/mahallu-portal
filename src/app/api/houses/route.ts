@@ -9,8 +9,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const houses = Storage.getHouses();
-    const citizens = Storage.getAllCitizens();
+    const houses = await Storage.getHouses();
+    const citizens = await Storage.getAllCitizens();
 
     return NextResponse.json({
       houses,
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const newHouse = Storage.createHouseWithMembers(
+    const newHouse = await Storage.createHouseWithMembers(
       {
         ...house,
         registeredByVolunteerName: user.name,

@@ -9,7 +9,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const allUsers = Storage.getUsers();
+    const allUsers = await Storage.getUsers();
     const volunteers = allUsers
       .filter((u) => u.role === 'VOLUNTEER')
       .map(({ passwordHash, ...safe }) => safe);
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     }
 
     // Check if username is taken
-    const existing = Storage.getUserByUsername(username);
+    const existing = await Storage.getUserByUsername(username);
     if (existing) {
       return NextResponse.json(
         { error: 'This username is already taken. Please choose another.' },
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const newVol = Storage.addUser({
+    const newVol = await Storage.addUser({
       name: name.trim(),
       phone: (phone || '').trim(),
       username: username.trim(),
@@ -74,7 +74,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Volunteer ID required' }, { status: 400 });
     }
 
-    Storage.deleteUser(id);
+    await Storage.deleteUser(id);
     return NextResponse.json({ success: true });
   } catch (e: any) {
     return NextResponse.json({ error: 'Failed to remove volunteer' }, { status: 500 });

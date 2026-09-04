@@ -10,15 +10,15 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const houses = Storage.getHouses();
-    const citizens = Storage.getAllCitizens();
+    const houses = await Storage.getHouses();
+    const citizens = await Storage.getAllCitizens();
 
     // 1. Households Sheet Data
-    const housesData = houses.map((h, i) => {
-      const head = h.members?.find((m) => m.isHead);
+    const housesData = houses.map((h: any, i: number) => {
+      const head = h.members?.find((m: any) => m.isHead);
       const vehicleSummary = (h.vehicles || [])
-        .filter((v) => v.count > 0)
-        .map((v) => `${v.type}: ${v.count}`)
+        .filter((v: any) => v.count > 0)
+        .map((v: any) => `${v.type}: ${v.count}`)
         .join(', ');
 
       return {
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     });
 
     // 2. All Citizens / Members Sheet Data
-    const citizensData = citizens.map((c, i) => ({
+    const citizensData = citizens.map((c: any, i: number) => ({
       'Sl No': i + 1,
       'Name': c.name,
       'Age': c.age,
@@ -62,8 +62,8 @@ export async function GET(req: Request) {
 
     // 3. Blood Donors List
     const bloodDonors = citizens
-      .filter((c) => c.bloodGroup && c.bloodGroup !== 'Unknown / Not Tested')
-      .map((c, i) => ({
+      .filter((c: any) => c.bloodGroup && c.bloodGroup !== 'Unknown / Not Tested')
+      .map((c: any, i: number) => ({
         'Sl No': i + 1,
         'Blood Group': c.bloodGroup,
         'Donor Name': c.name,
@@ -76,8 +76,8 @@ export async function GET(req: Request) {
 
     // 4. Students Directory
     const students = citizens
-      .filter((c) => c.jobCategory === 'Student' || c.classOrYear.includes('Class') || c.classOrYear.includes('Degree') || c.classOrYear.includes('+'))
-      .map((c, i) => ({
+      .filter((c: any) => c.jobCategory === 'Student' || c.classOrYear?.includes('Class') || c.classOrYear?.includes('Degree') || c.classOrYear?.includes('+'))
+      .map((c: any, i: number) => ({
         'Sl No': i + 1,
         'Student Name': c.name,
         'Age': c.age,

@@ -12,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const house = Storage.getHouseById(params.id);
+    const house = await Storage.getHouseById(params.id);
     if (!house) {
       return NextResponse.json({ error: 'House not found' }, { status: 404 });
     }
@@ -36,7 +36,7 @@ export async function PUT(
     const body = await req.json();
     const { house, head, members } = body;
 
-    const updated = Storage.updateHouseWithMembers(
+    const updated = await Storage.updateHouseWithMembers(
       params.id,
       house,
       head,
@@ -68,7 +68,7 @@ export async function DELETE(
       );
     }
 
-    Storage.deleteHouse(params.id);
+    await Storage.deleteHouse(params.id);
     return NextResponse.json({ success: true });
   } catch (e: any) {
     return NextResponse.json({ error: 'Failed to delete house' }, { status: 500 });
