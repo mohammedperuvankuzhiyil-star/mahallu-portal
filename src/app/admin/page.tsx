@@ -91,13 +91,16 @@ export default function AdminDashboard() {
       }
       setUser(meData.user);
 
-      // Fetch houses
-      const houseRes = await fetch('/api/houses');
+      // Fetch houses and volunteers in parallel
+      const [houseRes, volRes] = await Promise.all([
+        fetch('/api/houses'),
+        fetch('/api/volunteers'),
+      ]);
+
       if (houseRes.ok) {
         const hData = await houseRes.json();
         setHouses(hData.houses || []);
-        
-        // Extract flat citizens with house context
+
         const allCits: any[] = [];
         (hData.houses || []).forEach((h: House) => {
           (h.members || []).forEach((m: Citizen) => {
@@ -113,8 +116,6 @@ export default function AdminDashboard() {
         setCitizens(allCits);
       }
 
-      // Fetch volunteers
-      const volRes = await fetch('/api/volunteers');
       if (volRes.ok) {
         const vData = await volRes.json();
         setVolunteers(vData.volunteers || []);
@@ -166,12 +167,14 @@ export default function AdminDashboard() {
         throw new Error(data.error || 'Failed to create volunteer');
       }
 
+      if (data.volunteer) {
+        setVolunteers((prev) => [data.volunteer, ...prev]);
+      }
       setVolSuccess(`Volunteer "${volName}" created successfully!`);
       setVolName('');
       setVolPhone('');
       setVolUsername('');
       setVolPassword('');
-      fetchData();
     } catch (err: any) {
       setVolError(err.message || 'Error creating volunteer');
     } finally {

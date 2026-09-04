@@ -297,11 +297,18 @@ function saveLocalDb(data: LocalStore) {
   }
 }
 
+let isMongoSeeded = false;
+
 async function seedMongoIfEmpty() {
+  if (isMongoSeeded) return;
   try {
     const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      for (const u of initialData.users) {
+    if (userCount > 0) {
+      isMongoSeeded = true;
+      return;
+    }
+    isMongoSeeded = true;
+    for (const u of initialData.users) {
         await User.create({
           name: u.name,
           username: u.username.toLowerCase(),

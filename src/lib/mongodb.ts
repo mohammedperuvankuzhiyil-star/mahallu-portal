@@ -20,17 +20,19 @@ if (!cached) {
 
 export async function connectToDatabase() {
   if (!MONGODB_URI) {
-    // Falls back gracefully to storage layer if not provided yet
     return null;
   }
 
-  if (cached?.conn) {
+  if (cached?.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
 
   if (!cached?.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 10000,
+      maxPoolSize: 10,
     };
     cached!.promise = mongoose.connect(MONGODB_URI, opts).then((m) => m);
   }
