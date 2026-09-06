@@ -29,9 +29,11 @@ export default function Navbar({ user }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
         {/* Brand Logo & Name (Clean, without bulky role badge) */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 text-base sm:text-lg shrink-0">
-            🕌
-          </div>
+          <img
+            src="/masjid.jpg"
+            alt="Masjid Al-Fatah"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border border-emerald-600/30 shadow-md shadow-emerald-950/20 shrink-0"
+          />
           <div>
             <h1 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-tight tracking-tight">
               Masjid Al-Fatah
