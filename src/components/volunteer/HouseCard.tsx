@@ -2,14 +2,15 @@
 
 import React from 'react';
 import { House } from '@/types';
-import { Home, Users, Edit3, Phone, Car, MapPin, Tag } from 'lucide-react';
+import { Home, Users, Edit3, Phone, Car, MapPin, Tag, Trash2 } from 'lucide-react';
 
 interface HouseCardProps {
   house: House;
   onEdit: (house: House) => void;
+  onDelete?: (house: House) => void;
 }
 
-export default function HouseCard({ house, onEdit }: HouseCardProps) {
+export default function HouseCard({ house, onEdit, onDelete }: HouseCardProps) {
   const head = house.members?.find((m) => m.isHead);
   const totalMembers = house.members?.length || 0;
   const isBpl = house.economicStatus.toLowerCase().includes('bpl') || house.economicStatus.toLowerCase().includes('yellow') || house.economicStatus.toLowerCase().includes('priority');
@@ -43,14 +44,27 @@ export default function HouseCard({ house, onEdit }: HouseCardProps) {
           </div>
         </div>
 
-        {/* Quick Edit Button */}
-        <button
-          onClick={() => onEdit(house)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
-        >
-          <Edit3 className="w-3.5 h-3.5" />
-          <span>Edit</span>
-        </button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => onEdit(house)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit</span>
+          </button>
+
+          {onDelete && (
+            <button
+              onClick={() => onDelete(house)}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-600 text-red-600 hover:text-white dark:bg-red-950/40 dark:hover:bg-red-600 dark:text-red-400 dark:hover:text-white text-xs font-semibold transition-colors border border-red-200/80 dark:border-red-900/50"
+              title="Delete House & Members"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Delete</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* House & Family Details Grid */}

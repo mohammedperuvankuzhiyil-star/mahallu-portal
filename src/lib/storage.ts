@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import mongoose from 'mongoose';
 import { House, Citizen, UserSession } from '@/types';
 import { connectToDatabase } from './mongodb';
 import { User } from '@/models/User';
@@ -605,13 +606,49 @@ export const Storage = {
   deleteHouse: async (houseId: string) => {
     const conn = await connectToDatabase();
     if (conn) {
-      await HouseModel.findByIdAndDelete(houseId);
-      await CitizenModel.deleteMany({ houseId });
+      if (mongoose.Types.ObjectId.isValid(houseId)) {
+        await HouseModel.findByIdAndDelete(houseId);
+      } else {
+        await HouseModel.deleteOne({ _id: houseId });
+      }
+      await CitizenModel.deleteMany({
+        $or: [{ houseId: houseId }, { houseId: houseId.toString() }],
+      });
       return true;
     }
     const db = ensureLocalDb();
     db.houses = db.houses.filter((h) => h._id !== houseId);
     db.citizens = db.citizens.filter((c) => c.houseId !== houseId);
+    saveLocalDb(db);
+    return true;
+  },
+
+  deleteAllHouses: async () => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      await HouseModel.deleteMany({});
+      await CitizenModel.deleteMany({});
+      return true;
+    }
+    const db = ensureLocalDb();
+    db.houses = [];
+    db.citizens = [];
+    saveLocalDb(db);
+    return true;
+  },
+
+  deleteCitizen: async (citizenId: string) => {
+    const conn = await connectToDatabase();
+    if (conn) {
+      if (mongoose.Types.ObjectId.isValid(citizenId)) {
+        await CitizenModel.findByIdAndDelete(citizenId);
+      } else {
+        await CitizenModel.deleteOne({ _id: citizenId });
+      }
+      return true;
+    }
+    const db = ensureLocalDb();
+    db.citizens = db.citizens.filter((c) => c._id !== citizenId);
     saveLocalDb(db);
     return true;
   },

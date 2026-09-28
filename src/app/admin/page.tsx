@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import HouseCard from '@/components/volunteer/HouseCard';
 import HouseFormModal from '@/components/volunteer/HouseFormModal';
 import { House, Citizen, UserSession } from '@/types';
 import {
@@ -33,6 +34,8 @@ import {
   ArrowRight,
   AlertTriangle,
   Check,
+  Plus,
+  UserMinus,
 } from 'lucide-react';
 import {
   WARDS,
@@ -50,9 +53,22 @@ export default function AdminDashboard() {
   const [citizens, setCitizens] = useState<any[]>([]);
   const [volunteers, setVolunteers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'master' | 'blood' | 'students' | 'welfare' | 'volunteers'>('master');
+  const [activeTab, setActiveTab] = useState<'houses' | 'master' | 'blood' | 'students' | 'welfare' | 'volunteers'>('houses');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<House | null>(null);
+
+  // House Directory Filter States
+  const [houseSearchQuery, setHouseSearchQuery] = useState('');
+  const [houseFilterWard, setHouseFilterWard] = useState('All');
+  const [houseFilterEconomic, setHouseFilterEconomic] = useState('All');
+  const [actionFeedback, setActionFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  useEffect(() => {
+    if (actionFeedback) {
+      const timer = setTimeout(() => setActionFeedback(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [actionFeedback]);
 
   // Master Filter States
   const [searchQuery, setSearchQuery] = useState('');
@@ -265,24 +281,146 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`/api/volunteers?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
+        setActionFeedback({
+          type: 'success',
+          message: 'Volunteer account successfully removed.',
+        });
         fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to remove volunteer.');
       }
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleDeleteHouse = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this house record and all its members?')) return;
+  const handleOpenNewHouse = () => {
+    setEditingHouse(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditHouse = (house: House) => {
+    setEditingHouse(house);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteHouse = async (id?: string, houseName?: string, houseNo?: string) => {
+    if (!id) return;
+    const label = houseName ? `House #${houseNo || ''} (${houseName})` : 'this house record';
+    if (
+      !confirm(
+        `Are you sure you want to permanently delete ${label} and all its family members? This cannot be undone.`
+      )
+    )
+      return;
     try {
       const res = await fetch(`/api/houses/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        setActionFeedback({
+          type: 'success',
+          message: `${label} and all associated member records were permanently deleted.`,
+        });
         fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to delete house.');
       }
     } catch (e) {
       console.error(e);
+      alert('Network error while deleting house.');
     }
   };
+
+  const handleDeleteCitizen = async (
+    id: string,
+    name: string,
+    isHead: boolean,
+    houseId: string,
+    houseName: string,
+    houseNo: string
+  ) => {
+    if (isHead) {
+      if (
+        confirm(
+          `${name} is the Head of House for House #${houseNo} (${houseName}).\n\nDeleting the head will permanently remove the entire house and all its members.\n\nDo you want to proceed and delete the entire house?`
+        )
+      ) {
+        await handleDeleteHouse(houseId, houseName, houseNo);
+      }
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to permanently remove ${name} from this family record?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/citizens/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setActionFeedback({
+          type: 'success',
+          message: `Member ${name} was successfully removed.`,
+        });
+        fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to remove member.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Network error while removing member.');
+    }
+  };
+
+  const handleClearAllHouses = async () => {
+    if (
+      !confirm(
+        'CAUTION: Are you sure you want to delete ALL houses and citizen data from the database? This is typically used to clear test data.'
+      )
+    ) {
+      return;
+    }
+    const confirmationWord = prompt('Type "DELETE" to confirm wiping all houses and citizen records:');
+    if (confirmationWord !== 'DELETE') {
+      alert('Action cancelled. Database was not modified.');
+      return;
+    }
+    try {
+      const res = await fetch('/api/houses?action=clear_all', { method: 'DELETE' });
+      if (res.ok) {
+        setActionFeedback({
+          type: 'success',
+          message: 'All house and citizen records have been deleted successfully.',
+        });
+        fetchData();
+      } else {
+        alert('Failed to clear database records.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Network error while clearing database.');
+    }
+  };
+
+  // Filtered Houses for Houses Directory Tab
+  const filteredHouses = houses.filter((h) => {
+    const q = houseSearchQuery.toLowerCase().trim();
+    const head = h.members?.find((m) => m.isHead);
+    const matchesSearch =
+      !q ||
+      h.houseNo.toLowerCase().includes(q) ||
+      h.houseName.toLowerCase().includes(q) ||
+      (head?.name && head.name.toLowerCase().includes(q)) ||
+      (head?.phone && head.phone.includes(q)) ||
+      (h.registeredByVolunteerName && h.registeredByVolunteerName.toLowerCase().includes(q));
+
+    const matchesWard = houseFilterWard === 'All' || h.ward === houseFilterWard;
+    const matchesEconomic =
+      houseFilterEconomic === 'All' || h.economicStatus === houseFilterEconomic;
+
+    return matchesSearch && matchesWard && matchesEconomic;
+  });
 
   // KPI Calculations
   const totalHouses = houses.length;
@@ -426,6 +564,18 @@ export default function AdminDashboard() {
         {/* ================= DASHBOARD NAVIGATION TABS ================= */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200 dark:border-slate-800">
           <button
+            onClick={() => setActiveTab('houses')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
+              activeTab === 'houses'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800'
+            }`}
+          >
+            <Home className="w-4 h-4" />
+            <span>Houses Directory ({houses.length})</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('master')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 flex items-center gap-2 transition-all ${
               activeTab === 'master'
@@ -485,6 +635,122 @@ export default function AdminDashboard() {
             <span>Manage Volunteers ({volunteers.length})</span>
           </button>
         </div>
+
+        {/* ================= TAB 0: HOUSES DIRECTORY (WITH DELETE & EDIT) ================= */}
+        {activeTab === 'houses' && (
+          <div className="space-y-4">
+            {/* Filter & Action Controls */}
+            <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Filter className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Search &amp; Manage Houses</span>
+                </span>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={handleOpenNewHouse}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm shadow-emerald-600/20"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add New House</span>
+                  </button>
+
+                  {houses.length > 0 && (
+                    <button
+                      onClick={handleClearAllHouses}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 hover:bg-red-600 text-red-600 hover:text-white dark:bg-red-950/40 dark:hover:bg-red-600 dark:text-red-400 dark:hover:text-white text-xs font-semibold transition-all border border-red-200 dark:border-red-900"
+                      title="Clear All Test Houses from Database"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Clear All Houses</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Filter inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                <div className="sm:col-span-2 relative">
+                  <input
+                    type="text"
+                    placeholder="Search house no, house name, head name, phone..."
+                    value={houseSearchQuery}
+                    onChange={(e) => setHouseSearchQuery(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <select
+                    value={houseFilterWard}
+                    onChange={(e) => setHouseFilterWard(e.target.value)}
+                    className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  >
+                    <option value="All">All Wards</option>
+                    {WARDS.map((w) => (
+                      <option key={w} value={w}>
+                        {w}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <select
+                    value={houseFilterEconomic}
+                    onChange={(e) => setHouseFilterEconomic(e.target.value)}
+                    className="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  >
+                    <option value="All">All Economic Status</option>
+                    {ECONOMIC_STATUS_OPTIONS.map((ec) => (
+                      <option key={ec} value={ec}>
+                        {ec.split('(')[0]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Houses List */}
+            {filteredHouses.length === 0 ? (
+              <div className="py-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 space-y-3">
+                <Home className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  No matching houses found
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                  {houses.length === 0
+                    ? 'No houses are registered yet. Click "Add New House" to register one.'
+                    : 'Try clearing your search query or ward filter.'}
+                </p>
+                {houses.length === 0 && (
+                  <button
+                    onClick={handleOpenNewHouse}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-sm"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add First House</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {filteredHouses.map((h) => (
+                  <HouseCard
+                    key={h._id}
+                    house={h}
+                    onEdit={handleOpenEditHouse}
+                    onDelete={(house) =>
+                      handleDeleteHouse(house._id, house.houseName, house.houseNo)
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ================= TAB 1: MASTER DATA TABLE WITH MULTI-FILTERS ================= */}
         {activeTab === 'master' && (
@@ -610,12 +876,13 @@ export default function AdminDashboard() {
                       <th className="py-3 px-3">Education &amp; Status</th>
                       <th className="py-3 px-3">Job / Pravasi</th>
                       <th className="py-3 px-3">Contact</th>
+                      <th className="py-3 px-3 text-right">Delete Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
                     {filteredCitizens.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-8 text-center text-slate-400 text-xs">
+                        <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
                           No matching records found. Try clearing some filters.
                         </td>
                       </tr>
@@ -689,6 +956,46 @@ export default function AdminDashboard() {
                             ) : (
                               <span className="text-slate-400 text-[11px]">-</span>
                             )}
+                          </td>
+
+                          <td className="py-3 px-3 text-right whitespace-nowrap">
+                            <div className="inline-flex items-center justify-end gap-1">
+                              {c.isHead ? (
+                                <button
+                                  onClick={() =>
+                                    handleDeleteCitizen(c._id, c.name, true, c.houseId, c.houseName, c.houseNo)
+                                  }
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white dark:bg-red-950/40 dark:hover:bg-red-600 dark:text-red-400 dark:hover:text-white text-[11px] font-semibold transition-colors border border-red-200/80 dark:border-red-900/50"
+                                  title={`Delete House #${c.houseNo} (${c.houseName}) and all family members`}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Delete House</span>
+                                </button>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteCitizen(c._id, c.name, false, c.houseId, c.houseName, c.houseNo)
+                                    }
+                                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-[11px] transition-colors"
+                                    title={`Remove ${c.name} from family`}
+                                  >
+                                    <UserMinus className="w-3.5 h-3.5 text-red-500" />
+                                    <span className="hidden sm:inline">Remove</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteHouse(c.houseId, c.houseName, c.houseNo)
+                                    }
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                                    title={`Delete entire House #${c.houseNo} (${c.houseName})`}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -1315,6 +1622,50 @@ export default function AdminDashboard() {
           </div>
         )}
       </main>
+
+      {/* House Create / Edit Multi-step Modal */}
+      {isModalOpen && (
+        <HouseFormModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => {
+            setIsModalOpen(false);
+            fetchData();
+          }}
+          initialData={editingHouse}
+        />
+      )}
+
+      {/* Action Notification Toast */}
+      {actionFeedback && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div
+            className={`p-4 rounded-2xl shadow-2xl border flex items-start gap-3 ${
+              actionFeedback.type === 'success'
+                ? 'bg-slate-900 border-emerald-500/40 text-white'
+                : 'bg-slate-900 border-red-500/40 text-white'
+            }`}
+          >
+            {actionFeedback.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1 text-xs">
+              <span className="font-bold block text-sm">
+                {actionFeedback.type === 'success' ? 'Database Updated' : 'Notice'}
+              </span>
+              <span className="text-slate-300">{actionFeedback.message}</span>
+            </div>
+            <button
+              onClick={() => setActionFeedback(null)}
+              className="text-slate-400 hover:text-white text-xs font-bold ml-1"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
