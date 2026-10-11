@@ -3,6 +3,20 @@ import { Storage } from '@/lib/storage';
 import { getSession } from '@/lib/auth';
 import * as XLSX from 'xlsx';
 import { calculateAge } from '@/components/volunteer/HouseFormModal';
+import {
+  WARDS,
+  ECONOMIC_STATUS_OPTIONS,
+  HOUSE_OWNERSHIP_OPTIONS,
+  BLOOD_GROUPS,
+  MARITAL_STATUS_OPTIONS,
+  RELATION_OPTIONS,
+  EDUCATION_STAGES,
+  CLASS_YEAR_OPTIONS,
+  ISLAMIC_EDUCATION_OPTIONS,
+  JOB_CATEGORIES,
+  PRAVASI_COUNTRIES,
+  HEALTH_CONDITIONS,
+} from '@/lib/constants';
 
 function getField(row: any, ...keys: string[]): string {
   for (const k of keys) {
@@ -51,8 +65,9 @@ function parseExcelDate(val: any): string {
 
 function normalizeGender(g: string): string {
   const lower = g.toLowerCase();
-  if (lower.startsWith('f')) return 'Female';
-  if (lower.startsWith('m')) return 'Male';
+  if (lower.startsWith('f') || lower.includes('female') || lower.includes('sthree')) return 'Female';
+  if (lower.startsWith('m') || lower.includes('male') || lower.includes('purushan')) return 'Male';
+  if (lower.includes('other')) return 'Other';
   return 'Male';
 }
 
@@ -61,6 +76,184 @@ function normalizeBloodGroup(bg: string): string {
   const clean = bg.toUpperCase().replace(/\s+/g, '');
   const valid = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
   return valid.includes(clean) ? clean : 'Unknown / Not Tested';
+}
+
+function normalizeWard(val: string): string {
+  if (!val) return 'Ward 1';
+  const clean = val.trim();
+  const match = clean.match(/\d+/);
+  if (match) {
+    const num = parseInt(match[0], 10);
+    if (num >= 1 && num <= 12) return `Ward ${num}`;
+  }
+  const found = WARDS.find((w) => w.toLowerCase() === clean.toLowerCase());
+  return found || 'Ward 1';
+}
+
+function normalizeEconomicStatus(val: string): string {
+  if (!val) return 'APL (Above Poverty Line)';
+  const lower = val.toLowerCase();
+  if (lower.includes('bpl') || lower.includes('below poverty') || lower.includes('pink')) {
+    return 'BPL (Below Poverty Line)';
+  }
+  if (lower.includes('yellow') || lower.includes('aay') || lower.includes('antyodaya')) {
+    return 'AAY (Antyodaya Anna Yojana - Yellow)';
+  }
+  if (lower.includes('phh') || lower.includes('priority')) {
+    return 'PHH (Priority Household - Pink)';
+  }
+  if (lower.includes('blue') || lower.includes('nps')) {
+    return 'NPS (Non-Priority Subsidy - Blue)';
+  }
+  if (lower.includes('white') || lower.includes('npns')) {
+    return 'NPNS (Non-Priority Non-Subsidy - White)';
+  }
+  const found = ECONOMIC_STATUS_OPTIONS.find((e) => e.toLowerCase() === lower);
+  return found || 'APL (Above Poverty Line)';
+}
+
+function normalizeHouseOwnership(val: string): string {
+  if (!val) return 'Own House';
+  const lower = val.toLowerCase();
+  if (lower.includes('rent')) return 'Rented House';
+  if (lower.includes('mahallu') || lower.includes('quarter') || lower.includes('land')) return 'Mahallu Land / Quarters';
+  if (lower.includes('ancestral') || lower.includes('tharavadu') || lower.includes('family')) return 'Family Ancestral House';
+  if (lower.includes('shed') || lower.includes('temporary') || lower.includes('shelter')) return 'Temporary Shelter / Shed';
+  if (lower.includes('relative')) return 'Living with Relatives';
+  const found = HOUSE_OWNERSHIP_OPTIONS.find((h) => h.toLowerCase() === lower);
+  return found || 'Own House';
+}
+
+function normalizeRelation(val: string): string {
+  if (!val) return 'Family Member';
+  const lower = val.toLowerCase();
+  if (lower === 'head' || lower === 'self' || lower.includes('self (head)') || lower.includes('nathan') || lower.includes('nadhan')) {
+    return 'Self (Head)';
+  }
+  if (lower.includes('wife') || lower.includes('husband') || lower.includes('spouse') || lower.includes('bhaarya')) {
+    return 'Spouse (Wife/Husband)';
+  }
+  if (lower.includes('son-in-law') || lower.includes('marumakan')) return 'Son-in-law';
+  if (lower.includes('daughter-in-law') || lower.includes('marumakal')) return 'Daughter-in-law';
+  if (lower.includes('grandson')) return 'Grandson';
+  if (lower.includes('granddaughter')) return 'Granddaughter';
+  if (lower.includes('son') || lower.includes('makan')) return 'Son';
+  if (lower.includes('daughter') || lower.includes('makal')) return 'Daughter';
+  if (lower.includes('father-in-law')) return 'Father-in-law';
+  if (lower.includes('mother-in-law')) return 'Mother-in-law';
+  if (lower.includes('father') || lower.includes('vappah') || lower.includes('pithavu') || lower.includes('abba')) return 'Father';
+  if (lower.includes('mother') || lower.includes('ummah') || lower.includes('maathavu') || lower.includes('ammi')) return 'Mother';
+  if (lower.includes('brother')) return 'Brother';
+  if (lower.includes('sister')) return 'Sister';
+  const found = RELATION_OPTIONS.find((r) => r.toLowerCase() === lower);
+  return found || 'Other Relative';
+}
+
+function normalizeEducationStage(val: string): string {
+  if (!val) return 'High School (Class 8-10 / SSLC)';
+  const lower = val.toLowerCase();
+  if (lower.includes('illiterate') || lower.includes('no school')) return 'Illiterate / No Formal Schooling';
+  if (lower.includes('primary') && !lower.includes('upper') && !lower.includes('madrassa')) return 'Primary School (Class 1-4)';
+  if (lower.includes('upper primary') || lower.includes('up school')) return 'Upper Primary (Class 5-7)';
+  if (lower.includes('higher secondary') || lower.includes('+1') || lower.includes('+2') || lower.includes('plus two') || lower.includes('plus one') || lower.includes('vhse')) {
+    return 'Higher Secondary (+1 / +2 / VHSE)';
+  }
+  if (lower.includes('high school') || lower.includes('sslc') || lower.includes('10th')) return 'High School (Class 8-10 / SSLC)';
+  if (lower.includes('diploma') || lower.includes('iti') || lower.includes('polytechnic')) return 'Diploma / ITI / Polytechnic';
+  if (lower.includes('postgraduate') || lower.includes('pg') || lower.includes('msc') || lower.includes('mcom') || lower.includes('mba') || lower.includes('mca') || lower.includes('ma ')) {
+    return 'Postgraduate (MA, MSc, MCom, MBA, MCA, etc.)';
+  }
+  if (lower.includes('doctorate') || lower.includes('phd') || lower.includes('mphil')) return 'Doctorate (PhD / MPhil)';
+  if (lower.includes('mbbs') || lower.includes('bds') || lower.includes('professional') || lower.includes('lawyer') || lower.includes('llb') || lower.includes('ca ')) {
+    return 'Professional (MBBS, BDS, CA, CS, LLB, etc.)';
+  }
+  if (lower.includes('degree') || lower.includes('undergraduate') || lower.includes('ug') || lower.includes('btech') || lower.includes('bsc') || lower.includes('bcom') || lower.includes('ba ')) {
+    return 'Undergraduate (BA, BSc, BCom, BTech, etc.)';
+  }
+  const found = EDUCATION_STAGES.find((s) => s.toLowerCase() === lower);
+  return found || 'High School (Class 8-10 / SSLC)';
+}
+
+function normalizeClassYear(val: string): string {
+  if (!val) return 'Course Completed / Graduated';
+  const lower = val.toLowerCase();
+  if (lower.includes('sslc') || lower.includes('class 10')) return 'Class 10 (SSLC Candidate)';
+  if (lower.includes('+1') || lower.includes('plus one') || lower.includes('11th')) return '+1 (Plus One - 11th)';
+  if (lower.includes('+2') || lower.includes('plus two') || lower.includes('12th')) return '+2 (Plus Two - 12th)';
+  if (lower.includes('1st year diploma') || lower.includes('diploma 1')) return '1st Year Diploma / ITI';
+  if (lower.includes('2nd year diploma') || lower.includes('diploma 2')) return '2nd Year Diploma / ITI';
+  if (lower.includes('3rd year diploma') || lower.includes('diploma 3')) return '3rd Year Diploma / ITI';
+  if (lower.includes('1st year degree') || lower.includes('degree 1') || lower.includes('first year degree')) return '1st Year Degree / UG';
+  if (lower.includes('2nd year degree') || lower.includes('degree 2') || lower.includes('second year degree')) return '2nd Year Degree / UG';
+  if (lower.includes('final year degree') || lower.includes('3rd year degree') || lower.includes('degree 3')) return 'Final Year Degree / UG';
+  if (lower.includes('1st year pg') || lower.includes('pg 1')) return '1st Year PG';
+  if (lower.includes('final year pg') || lower.includes('2nd year pg') || lower.includes('pg 2')) return 'Final Year PG';
+  if (lower.includes('completed') || lower.includes('graduated')) return 'Course Completed / Graduated';
+  if (lower.includes('dropout') || lower.includes('discontinued')) return 'Discontinued / Dropped Out';
+  if (lower.includes('not applicable') || lower === 'na' || lower === 'n/a') return 'Not Applicable';
+  for (let i = 1; i <= 9; i++) {
+    if (lower === `class ${i}` || lower === `${i}` || lower === `${i}th`) return `Class ${i}`;
+  }
+  const found = CLASS_YEAR_OPTIONS.find((c) => c.toLowerCase() === lower);
+  return found || 'Course Completed / Graduated';
+}
+
+function normalizeIslamicEducation(val: string): string {
+  if (!val) return 'Madrassa High School (Class 5-10)';
+  const lower = val.toLowerCase();
+  if (lower.includes('hifz') || lower.includes('hafiz') || lower.includes('quran')) return 'Hifz (Quran Memorizer / Hafiz)';
+  if (lower.includes('dars') || lower.includes('arabic college') || lower.includes('alim') || lower.includes('moulavi')) return 'Dars / Arabic College (Moulavi / Alim)';
+  if (lower.includes('wafy') || lower.includes('faizy') || lower.includes("da'wa") || lower.includes('specialized islamic')) {
+    return "Specialized Islamic Degree (Faizy, Wafy, Da'wa, etc.)";
+  }
+  if (lower.includes('higher secondary') || lower.includes('11-12') || lower.includes('12 completed')) return 'Madrassa Higher Secondary (11-12 Completed)';
+  if (lower.includes('primary') || lower.includes('1-4')) return 'Madrassa Primary (Class 1-4)';
+  if (lower.includes('home') || lower.includes('veettil')) return 'Basic Home Islamic Study';
+  if (lower.includes('none') || lower === 'nil') return 'None';
+  if (lower.includes('high school') || lower.includes('5-10') || lower.includes('madrassa')) return 'Madrassa High School (Class 5-10)';
+  const found = ISLAMIC_EDUCATION_OPTIONS.find((i) => i.toLowerCase() === lower);
+  return found || 'Madrassa High School (Class 5-10)';
+}
+
+function normalizeJobCategory(val: string): string {
+  if (!val) return 'Daily Wage / Coolie / Construction';
+  const lower = val.toLowerCase();
+  if (lower.includes('student') || lower.includes('padikkunnu')) return 'Student';
+  if (lower.includes('homemaker') || lower.includes('housewife') || lower.includes('veetamma')) return 'Homemaker';
+  if (lower.includes('gulf') || lower.includes('pravasi') || lower.includes('abroad') || lower.includes('expatriate')) return 'Gulf / Pravasi Worker';
+  if (lower.includes('govt') || lower.includes('government')) return 'Government Employee (State/Central)';
+  if (lower.includes('business') || lower.includes('shop') || lower.includes('trade') || lower.includes('kachaavadam')) return 'Business / Self-Employed / Shop';
+  if (lower.includes('daily wage') || lower.includes('coolie') || lower.includes('construction') || lower.includes('cooly')) return 'Daily Wage / Coolie / Construction';
+  if (lower.includes('driver')) return 'Driver (Auto, Taxi, Heavy)';
+  if (lower.includes('agriculture') || lower.includes('farming') || lower.includes('dairy') || lower.includes('krishi')) return 'Agriculture / Farming / Dairy';
+  if (lower.includes('doctor') || lower.includes('engineer') || lower.includes('teacher') || lower.includes('lawyer') || lower.includes('advocate') || lower.includes('professional')) {
+    return 'Professional (Doctor, Engineer, Lawyer, Teacher)';
+  }
+  if (lower.includes('usthad') || lower.includes('imam') || lower.includes('scholar') || lower.includes('muazzin') || lower.includes('moulavi')) {
+    return 'Religious Scholar / Usthad / Imam / Muazzin';
+  }
+  if (lower.includes('unemployed') || lower.includes('job seeker')) return 'Unemployed / Job Seeker';
+  if (lower.includes('retired')) return 'Retired';
+  if (lower.includes('unable') || lower.includes('bedridden')) return 'Unable to Work (Due to Health or Age)';
+  if (lower.includes('private')) return 'Private Sector Employee';
+  const found = JOB_CATEGORIES.find((j) => j.toLowerCase() === lower);
+  return found || 'Daily Wage / Coolie / Construction';
+}
+
+function normalizeHealthCondition(val: string): string {
+  if (!val) return 'None (Healthy)';
+  const lower = val.toLowerCase();
+  if (lower.includes('diabetes') || lower.includes('bp') || lower.includes('sugar') || lower.includes('hypertension')) return 'Diabetes / Hypertension (BP)';
+  if (lower.includes('heart') || lower.includes('cardiac')) return 'Heart Disease / Cardiac Issue';
+  if (lower.includes('kidney') || lower.includes('dialysis')) return 'Kidney Disease / Dialysis Patient';
+  if (lower.includes('cancer')) return 'Cancer Patient / Under Treatment';
+  if (lower.includes('disability') || lower.includes('handicap')) return 'Physical Disability / Handicapped';
+  if (lower.includes('mental') || lower.includes('autism') || lower.includes('intellectual')) return 'Mental Health / Intellectual Disability';
+  if (lower.includes('bedridden') || lower.includes('palliative')) return 'Bedridden / Palliative Care Needed';
+  if (lower.includes('asthma') || lower.includes('respiratory')) return 'Asthma / Respiratory Illness';
+  if (lower.includes('none') || lower.includes('healthy') || lower === 'nil' || lower === 'no') return 'None (Healthy)';
+  const found = HEALTH_CONDITIONS.find((h) => h.toLowerCase() === lower);
+  return found || 'None (Healthy)';
 }
 
 function parseExcelRowsToHouses(rows: any[]) {
@@ -75,9 +268,9 @@ function parseExcelRowsToHouses(rows: any[]) {
   for (const row of rows) {
     let rowHouseNo = getField(row, 'House No', 'House Number', 'HouseNo', 'House#');
     let rowHouseName = getField(row, 'House Name', 'HouseName');
-    let rowWard = getField(row, 'Ward');
-    let rowEconomic = getField(row, 'Economic Status', 'EconomicStatus');
-    let rowOwnership = getField(row, 'House Ownership', 'HouseOwnership', 'Ownership');
+    let rowWard = normalizeWard(getField(row, 'Ward'));
+    let rowEconomic = normalizeEconomicStatus(getField(row, 'Economic Status', 'EconomicStatus', 'Economic'));
+    let rowOwnership = normalizeHouseOwnership(getField(row, 'House Ownership', 'HouseOwnership', 'Ownership'));
     const name = getField(row, 'Name', 'Full Name', 'Citizen Name', 'Member Name');
 
     // Skip empty row
@@ -95,8 +288,9 @@ function parseExcelRowsToHouses(rows: any[]) {
 
     if (!rowHouseNo || !name) continue;
 
-    const relation = getField(row, 'Relation to Head', 'Relation', 'Relationship');
-    const relLower = relation.toLowerCase();
+    const rawRelation = getField(row, 'Relation to Head', 'Relation', 'Relationship');
+    const relation = normalizeRelation(rawRelation);
+    const relLower = rawRelation.toLowerCase();
     const isExplicitHead =
       relLower === 'head' ||
       relLower === 'self' ||
@@ -104,7 +298,8 @@ function parseExcelRowsToHouses(rows: any[]) {
       relLower === 'house head' ||
       relLower === 'family head' ||
       relLower.includes('nathan') ||
-      relLower.includes('nadhan');
+      relLower.includes('nadhan') ||
+      relation === 'Self (Head)';
 
     const dobRaw = getField(row, 'Date of Birth', 'DOB', 'Birth Date');
     const ageRaw = getField(row, 'Age');
@@ -127,15 +322,15 @@ function parseExcelRowsToHouses(rows: any[]) {
     const bloodGroup = normalizeBloodGroup(getField(row, 'Blood Group', 'BloodGroup', 'Blood'));
     const maritalStatus = getField(row, 'Marital Status', 'MaritalStatus') || 'Married';
     const phone = getField(row, 'Phone', 'Phone Number', 'Mobile', 'Contact');
-    const educationStage = getField(row, 'Education Stage', 'Education') || 'High School (Class 8-10 / SSLC)';
-    const classOrYear = getField(row, 'Class / Status', 'Class', 'ClassOrYear') || 'Course Completed / Graduated';
-    const islamicEducation = getField(row, 'Islamic Education', 'IslamicEducation', 'Madrassa') || 'Madrassa High School (Class 5-10)';
-    const jobCategory = getField(row, 'Job Category', 'Job', 'Occupation') || 'Daily Wage / Coolie / Construction';
-    const specificJob = getField(row, 'Specific Job', 'Job Details');
+    const educationStage = normalizeEducationStage(getField(row, 'Education Stage', 'Education', 'Educational Stage'));
+    const classOrYear = normalizeClassYear(getField(row, 'Class / Year', 'Class/Year', 'Class / Status', 'Class', 'ClassOrYear'));
+    const islamicEducation = normalizeIslamicEducation(getField(row, 'Islamic Education', 'IslamicEducation', 'Madrassa'));
+    const jobCategory = normalizeJobCategory(getField(row, 'Job Category', 'Job', 'Occupation'));
+    const specificJob = getField(row, 'Specific Job / Details', 'Specific Job', 'Job Details', 'Profession');
     const pravasiStr = getField(row, 'Pravasi Status', 'Is Pravasi', 'Pravasi').toLowerCase();
     const isPravasi = pravasiStr === 'yes' || pravasiStr === 'true' || pravasiStr === '1' || pravasiStr === 'y';
     const pravasiCountry = getField(row, 'Pravasi Country', 'Country');
-    const healthCondition = getField(row, 'Health Condition', 'Health', 'Medical Condition') || 'None (Healthy)';
+    const healthCondition = normalizeHealthCondition(getField(row, 'Health Condition', 'Health', 'Medical Condition'));
 
     const citizenData = {
       name,
@@ -256,7 +451,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'The uploaded file does not contain any sheets.' }, { status: 400 });
     }
 
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    // Read the primary data sheet ('Family Data Entry' or first sheet)
+    const targetSheetName =
+      workbook.SheetNames.find((s) => s.toLowerCase().includes('family') || s.toLowerCase().includes('data')) ||
+      workbook.SheetNames[0];
+
+    const sheet = workbook.Sheets[targetSheetName];
     const rawRows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
     if (rawRows.length === 0) {

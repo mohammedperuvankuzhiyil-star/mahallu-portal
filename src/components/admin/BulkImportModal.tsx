@@ -167,7 +167,7 @@ export default function BulkImportModal({
                 Step 1: Use Standard Excel Template
               </span>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                Download pre-formatted template with sample families and field guide
+                Download template with built-in clickable dropdown pickers for Ward, Education, Class, Job, Health, etc.
               </p>
             </div>
 
