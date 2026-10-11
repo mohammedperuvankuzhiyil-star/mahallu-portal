@@ -914,7 +914,12 @@ export default function AdminDashboard() {
                           </td>
 
                           <td className="py-3 px-2 whitespace-nowrap">
-                            <span>{c.age} yrs</span>
+                            <span className="font-semibold">{c.age} yrs</span>
+                            {c.dob && (
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-normal">
+                                DOB: {c.dob}
+                              </span>
+                            )}
                             <span className="text-[10px] text-slate-400 block">{c.gender}</span>
                           </td>
 

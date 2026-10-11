@@ -5,6 +5,7 @@ export interface ICitizen extends Document {
   isHead: boolean;
   relationToHead: string;
   name: string;
+  dob?: string;
   age: number;
   gender: string;
   bloodGroup: string;
@@ -34,6 +35,7 @@ const CitizenSchema = new Schema<ICitizen>(
     isHead: { type: Boolean, default: false },
     relationToHead: { type: String, required: true },
     name: { type: String, required: true, trim: true },
+    dob: { type: String, default: '' },
     age: { type: Number, required: true },
     gender: { type: String, required: true },
     bloodGroup: { type: String, default: 'Unknown / Not Tested' },

@@ -15,6 +15,7 @@ import {
   AlertCircle,
   PlusCircle,
   MinusCircle,
+  Calendar,
 } from 'lucide-react';
 import {
   WARDS,
@@ -35,6 +36,26 @@ import {
 } from '@/lib/constants';
 import { House, Citizen, VehicleCount } from '@/types';
 
+export function calculateAge(dobString?: string): number | null {
+  if (!dobString) return null;
+  const parts = dobString.split('-');
+  if (parts.length !== 3) return null;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+
+  const birthDate = new Date(year, month, day);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age < 0 ? 0 : age;
+}
+
 interface HouseFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -44,6 +65,7 @@ interface HouseFormModalProps {
 
 const defaultHead: Partial<Citizen> = {
   name: '',
+  dob: '',
   age: 45,
   gender: 'Male',
   bloodGroup: 'O+',
@@ -64,6 +86,7 @@ const defaultHead: Partial<Citizen> = {
 
 const createEmptyMember = (): Partial<Citizen> => ({
   name: '',
+  dob: '',
   age: 20,
   gender: 'Male',
   relationToHead: 'Son',
@@ -148,6 +171,28 @@ export default function HouseFormModal({
     setMembers((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleHeadDobChange = (dobValue: string) => {
+    const calculatedAge = calculateAge(dobValue);
+    setHead((prev) => ({
+      ...prev,
+      dob: dobValue,
+      ...(calculatedAge !== null ? { age: calculatedAge } : {}),
+    }));
+  };
+
+  const handleMemberDobChange = (index: number, dobValue: string) => {
+    const calculatedAge = calculateAge(dobValue);
+    setMembers((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        dob: dobValue,
+        ...(calculatedAge !== null ? { age: calculatedAge } : {}),
+      };
       return updated;
     });
   };
@@ -428,8 +473,8 @@ export default function HouseFormModal({
                 <span>Entering details for the primary Head of the Household</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                <div className="sm:col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
+                <div className="sm:col-span-7">
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Head Full Name <span className="text-red-500">*</span>
                   </label>
@@ -443,18 +488,40 @@ export default function HouseFormModal({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Age
-                  </label>
+                <div className="sm:col-span-5">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Date of Birth</span>
+                    </label>
+                    {head.age !== undefined && head.age !== null && (
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        Age: {head.age} yrs
+                      </span>
+                    )}
+                  </div>
                   <input
-                    type="number"
-                    min="1"
-                    max="120"
-                    value={head.age || ''}
-                    onChange={(e) => setHead({ ...head, age: Number(e.target.value) })}
+                    type="date"
+                    max={new Date().toISOString().split('T')[0]}
+                    min="1900-01-01"
+                    value={head.dob || ''}
+                    onChange={(e) => handleHeadDobChange(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   />
+                  {!head.dob && (
+                    <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400">
+                      <span>Or enter approx age:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="120"
+                        value={head.age || ''}
+                        onChange={(e) => setHead({ ...head, age: Number(e.target.value) })}
+                        className="w-16 px-1.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs text-center"
+                        placeholder="Age"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -795,8 +862,8 @@ export default function HouseFormModal({
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="sm:col-span-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                        <div className="sm:col-span-5">
                           <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Full Name
                           </label>
@@ -809,7 +876,7 @@ export default function HouseFormModal({
                           />
                         </div>
 
-                        <div>
+                        <div className="sm:col-span-3">
                           <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Relation to Head
                           </label>
@@ -825,23 +892,45 @@ export default function HouseFormModal({
                             ))}
                           </select>
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                            Age
-                          </label>
+                        <div className="sm:col-span-4">
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                              <Calendar className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                              <span>Date of Birth</span>
+                            </label>
+                            {member.age !== undefined && member.age !== null && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                Age: {member.age} yrs
+                              </span>
+                            )}
+                          </div>
                           <input
-                            type="number"
-                            min="0"
-                            max="120"
-                            value={member.age || ''}
-                            onChange={(e) => handleMemberChange(index, 'age', Number(e.target.value))}
+                            type="date"
+                            max={new Date().toISOString().split('T')[0]}
+                            min="1900-01-01"
+                            value={member.dob || ''}
+                            onChange={(e) => handleMemberDobChange(index, e.target.value)}
                             className="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                           />
+                          {!member.dob && (
+                            <div className="flex items-center gap-1 mt-1 text-[10px] text-slate-400">
+                              <span>Or enter approx age:</span>
+                              <input
+                                type="number"
+                                min="0"
+                                max="120"
+                                value={member.age || ''}
+                                onChange={(e) => handleMemberChange(index, 'age', Number(e.target.value))}
+                                className="w-14 px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-[10px] text-center"
+                                placeholder="Age"
+                              />
+                            </div>
+                          )}
                         </div>
+                      </div>
 
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Gender

@@ -41,6 +41,7 @@ export async function GET(req: Request) {
     const citizensData = citizens.map((c: any, i: number) => ({
       'Sl No': i + 1,
       'Name': c.name,
+      'Date of Birth': c.dob || 'N/A',
       'Age': c.age,
       'Gender': c.gender,
       'Relation to Head': c.relationToHead,

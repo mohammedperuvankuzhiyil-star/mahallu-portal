@@ -9,6 +9,7 @@ export interface Citizen {
   isHead: boolean;
   relationToHead: string;
   name: string;
+  dob?: string;
   age: number;
   gender: string;
   bloodGroup: string;
