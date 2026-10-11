@@ -653,6 +653,96 @@ export const Storage = {
     return true;
   },
 
+  bulkImportHousesWithMembers: async (
+    housesData: Array<{ house: any; head: any; members: any[] }>,
+    userSession?: UserSession
+  ) => {
+    const conn = await connectToDatabase();
+    const importedHouses: any[] = [];
+
+    if (conn) {
+      for (const item of housesData) {
+        const createdHouse = await HouseModel.create({
+          ...item.house,
+          registeredByVolunteerName: userSession?.name ? `Bulk Import (${userSession.name})` : 'Committee Bulk Import',
+          registeredByVolunteerId: userSession?.id || 'admin-bulk',
+        });
+        const houseIdStr = createdHouse._id.toString();
+
+        const createdHead = await CitizenModel.create({
+          ...item.head,
+          houseId: houseIdStr,
+          isHead: true,
+          relationToHead: 'Self (Head)',
+        });
+
+        const createdMembers = [];
+        for (const m of item.members) {
+          const cm = await CitizenModel.create({
+            ...m,
+            houseId: houseIdStr,
+            isHead: false,
+          });
+          createdMembers.push({ ...cm.toObject(), _id: cm._id.toString() });
+        }
+
+        importedHouses.push({
+          ...createdHouse.toObject(),
+          _id: houseIdStr,
+          members: [
+            { ...createdHead.toObject(), _id: createdHead._id.toString() },
+            ...createdMembers,
+          ],
+        });
+      }
+      return importedHouses;
+    }
+
+    const db = ensureLocalDb();
+    const now = new Date().toISOString();
+
+    for (const item of housesData) {
+      const houseId = 'house-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+      const newHouse: House = {
+        ...item.house,
+        _id: houseId,
+        registeredByVolunteerName: userSession?.name ? `Bulk Import (${userSession.name})` : 'Committee Bulk Import',
+        registeredByVolunteerId: userSession?.id || 'admin-bulk',
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      const newHead: Citizen = {
+        ...item.head,
+        _id: 'cit-' + Date.now() + '-0-' + Math.floor(Math.random() * 1000),
+        houseId,
+        isHead: true,
+        relationToHead: 'Self (Head)',
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      const newMembers: Citizen[] = item.members.map((m, idx) => ({
+        ...m,
+        _id: 'cit-' + Date.now() + '-' + (idx + 1) + '-' + Math.floor(Math.random() * 1000),
+        houseId,
+        isHead: false,
+        createdAt: now,
+        updatedAt: now,
+      }));
+
+      db.houses.unshift(newHouse);
+      db.citizens.push(newHead, ...newMembers);
+      importedHouses.push({
+        ...newHouse,
+        members: [newHead, ...newMembers],
+      });
+    }
+
+    saveLocalDb(db);
+    return importedHouses;
+  },
+
   getAllCitizens: async () => {
     const conn = await connectToDatabase();
     if (conn) {

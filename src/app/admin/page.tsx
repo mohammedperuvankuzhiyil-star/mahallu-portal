@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import HouseCard from '@/components/volunteer/HouseCard';
 import HouseFormModal from '@/components/volunteer/HouseFormModal';
+import BulkImportModal from '@/components/admin/BulkImportModal';
 import { House, Citizen, UserSession } from '@/types';
 import {
   ShieldCheck,
@@ -36,6 +37,8 @@ import {
   Check,
   Plus,
   UserMinus,
+  FileSpreadsheet,
+  Upload,
 } from 'lucide-react';
 import {
   WARDS,
@@ -55,6 +58,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'houses' | 'master' | 'blood' | 'students' | 'welfare' | 'volunteers'>('houses');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<House | null>(null);
 
   // House Directory Filter States
@@ -511,14 +515,25 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            {/* Quick Export Button in Header */}
-            <button
-              onClick={handleExportExcel}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-900/40 transition-all shrink-0"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export to Excel (.xlsx)</span>
-            </button>
+            {/* Quick Actions in Header */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold border border-white/20 transition-all shrink-0 backdrop-blur-sm shadow-md"
+                title="Bulk Upload Excel Sheet of Mahallu Families"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-300" />
+                <span>Bulk Import (Excel)</span>
+              </button>
+
+              <button
+                onClick={handleExportExcel}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-900/40 transition-all shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export to Excel (.xlsx)</span>
+              </button>
+            </div>
           </div>
 
           {/* KPI CARDS GRID */}
@@ -648,6 +663,15 @@ export default function AdminDashboard() {
                 </span>
 
                 <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-all shadow-sm"
+                    title="Upload Mahallu Committee Excel Sheet"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Import Excel</span>
+                  </button>
+
                   <button
                     onClick={handleOpenNewHouse}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm shadow-emerald-600/20"
@@ -1640,6 +1664,16 @@ export default function AdminDashboard() {
           initialData={editingHouse}
         />
       )}
+
+      {/* Excel Bulk Import Modal */}
+      <BulkImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={(msg) => {
+          setActionFeedback({ type: 'success', message: msg });
+          fetchData();
+        }}
+      />
 
       {/* Action Notification Toast */}
       {actionFeedback && (
